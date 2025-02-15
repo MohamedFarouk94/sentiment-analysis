@@ -2,6 +2,9 @@ services:
   - type: web
     name: fastapi-app
     env: python
-    buildCommand: "pip install -r requirements.txt && git lfs pull"
+    buildCommand: |
+      apt-get update && apt-get install -y git-lfs && git lfs install
+      pip install -r requirements.txt
+      git lfs pull
     startCommand: "uvicorn main:app --host 0.0.0.0 --port $PORT"
     plan: free
