@@ -8,14 +8,12 @@ app = FastAPI()
 
 MODEL_DIR = "bert_sentiment"
 
-# Load tokenizer and model
 tokenizer = BertTokenizer.from_pretrained(MODEL_DIR)
 model = BertForSequenceClassification.from_pretrained(
-    MODEL_DIR, num_labels=1, state_dict=load_file(f"{MODEL_DIR}/model.safetensors")
+    MODEL_DIR, num_labels=2, state_dict=load_file(f"{MODEL_DIR}/model.safetensors"),  # ignore_mismatched_sizes=True
 )
 model.eval()
 
-# Load HTML template
 with open("static/index.html", "r") as f:
     html_template = f.read()
 
@@ -31,8 +29,9 @@ async def predict(text: str = Form(...)):
 
     with torch.no_grad():
         logit = model(**inputs).logits.squeeze()
-        probability = torch.sigmoid(logit).item()  # Convert logit to probability (0-1)
+        print(torch.sigmoid(logit))
+        probability = torch.sigmoid(logit)[1]  # Convert logit to probability (0-1)
 
-    sentiment_score = int(probability * 100)  # Scale to 0-100
+    sentiment_score = probability * 100
 
-    return f"Sentiment Score: {sentiment_score}/100"
+    return f"Sentiment Score: {sentiment_score:.4}%"
